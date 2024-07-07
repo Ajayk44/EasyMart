@@ -1,10 +1,17 @@
 import React, { useEffect, useRef } from "react";
 import "./header.css";
 import { motion } from "framer-motion";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/eco-logo.png";
 import userIcon from "../../assets/images/user-icon.png";
 import { Container, Row } from "reactstrap";
+import { useSelector } from "react-redux";
+import useAuth from "../../custom-hooks/useAuth";
+import { Link } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase.config";
+import toast from "react-hot-toast";
+
 const nav__link = [
   {
     path: "home",
@@ -21,7 +28,13 @@ const nav__link = [
 ];
 const Header = () => {
   const headerRef = useRef(null);
+  const profileActionRef = useRef(null);
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+  const navigate = useNavigate();
   const menuRef = useRef(null);
+
+  const { currentUser } = useAuth();
+
   const stickyHeaderFunc = () => {
     window.addEventListener("scroll", () => {
       if (
@@ -43,6 +56,23 @@ const Header = () => {
 
   const menuToggle = () => menuRef.current.classList.toggle("active__menu");
 
+  const navigateToCart = () => {
+    navigate("/cart");
+  };
+
+  const toggleProfileAction = () =>
+    profileActionRef.current.classList.toggle("show__profileActions");
+
+  const logOut = () => {
+    signOut(auth)
+      .then(() => {
+        toast.success("Logged out ");
+        navigate("/home");
+      })
+      .catch((error) => {
+        toast.error(error.message);
+      });
+  };
   return (
     <header className="header" ref={headerRef}>
       <Container>
@@ -80,14 +110,34 @@ const Header = () => {
                 <i class="ri-heart-line"></i>
                 <span className="badge">1</span>
               </span>
-              <span className="cart__icon">
+              <span className="cart__icon" onClick={navigateToCart}>
                 <i class="ri-shopping-bag-line"></i>
-                <span className="badge">1</span>
+                {totalQuantity > 0 && (
+                  <span className="badge">{totalQuantity}</span>
+                )}
               </span>
 
-              <span>
-                <motion.img whileTap={{ scale: 1.2 }} src={userIcon} alt="" />
-              </span>
+              <div className="profile">
+                <motion.img
+                  whileTap={{ scale: 1.2 }}
+                  src={currentUser ? currentUser.photoURL : userIcon}
+                  onClick={toggleProfileAction}
+                />
+                <div
+                  className="profile__actions"
+                  ref={profileActionRef}
+                  onClick={toggleProfileAction}
+                >
+                  {currentUser ? (
+                    <span onClick={logOut}>Logout</span>
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center flex-column ">
+                      <Link to="/signup">Signup</Link>
+                      <Link to="/login">Login</Link>
+                    </div>
+                  )}
+                </div>
+              </div>
 
               <div className="mobile__menu">
                 <span onClick={menuToggle}>
