@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Container, Row, Col } from "reactstrap";
 import { useParams } from "react-router-dom";
-import products from "../assets/data/products";
 import Helmet from "../components/Helmet/Helmet";
 import CommonSection from "../components/UI/CommonSection";
 import { motion } from "framer-motion";
@@ -10,7 +9,13 @@ import ProductList from "../components/UI/ProductList";
 import { useDispatch } from "react-redux";
 import { cartActions } from "../redux/slices/cartSlice";
 import toast from "react-hot-toast";
+
+import { db } from "../firebase.config";
+import { doc, getDoc } from "firebase/firestore";
+import useGetData from "../custom-hooks/useGetData";
+
 const ProductDetails = () => {
+  const [product, setProduct] = useState({});
   const [tab, setTab] = useState("desc");
 
   const reviewUser = useRef("");
@@ -19,8 +24,24 @@ const ProductDetails = () => {
   const { id } = useParams();
 
   const dispatch = useDispatch();
+  const { data: products } = useGetData("products");
+  // const product = products.find((item) => item.id === id);
 
-  const product = products.find((item) => item.id === id);
+  const docRef = doc(db, "products", id);
+
+  useEffect(() => {
+    const getProduct = async () => {
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap) {
+        setProduct(docSnap.data());
+      } else {
+        console.log("no product");
+      }
+    };
+
+    getProduct();
+  }, []);
   const {
     imgUrl,
     productName,
@@ -138,7 +159,7 @@ const ProductDetails = () => {
                   className={`${tab === "rev" ? "active__tab" : ""}`}
                   onClick={() => setTab("rev")}
                 >
-                  Reviews ({reviews.length})
+                  {/* Reviews ({reviews.length}) */}
                 </h6>
               </div>
 

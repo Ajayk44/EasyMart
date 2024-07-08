@@ -2,11 +2,18 @@ import React, { useState } from "react";
 import CommonSection from "../components/UI/CommonSection";
 import Helmet from "../components/Helmet/Helmet";
 import { Container, Row, Col } from "reactstrap";
-import products from "../assets/data/products";
 import "../styles/shop.css";
 import ProductList from "../components/UI/ProductList";
+import useGetData from "../custom-hooks/useGetData";
+import { useEffect } from "react";
+
 const Shop = () => {
-  const [productsData, setProductsData] = useState(products);
+  const { data: products, loading } = useGetData("products");
+  const [productsData, setProductsData] = useState([]);
+
+  useEffect(() => {
+    setProductsData(products);
+  }, []);
 
   const handleFilter = (e) => {
     const filterValue = e.target.value;
@@ -24,7 +31,7 @@ const Shop = () => {
   const handleSearch = (e) => {
     const searchTerm = e.target.value;
 
-    const searchedProducts = products.filter((item) =>
+    const searchedProducts = productsData.filter((item) =>
       item.productName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -77,7 +84,9 @@ const Shop = () => {
       <section>
         <Container>
           <Row>
-            {productsData.length === 0 ? (
+            {loading ? (
+              <h5>Loading....</h5>
+            ) : productsData.length === 0 ? (
               <h1 className="text-center">No products found</h1>
             ) : (
               <ProductList data={productsData} />
