@@ -40,12 +40,12 @@ const Signup = () => {
           toast.error(error.message);
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(async (donwloadURL) => {
+          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
             //update profile
 
             await updateProfile(user, {
               displayName: username,
-              photoURL: donwloadURL,
+              photoURL: downloadURL,
             });
 
             //store data in firestore
@@ -54,7 +54,7 @@ const Signup = () => {
               uid: user.uid,
               displayName: username,
               email,
-              photoURL: donwloadURL,
+              photoURL: downloadURL,
             });
           });
         }
